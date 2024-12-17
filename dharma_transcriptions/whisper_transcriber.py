@@ -80,9 +80,12 @@ def format_time(seconds):
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
-    audio_path = "TREINAMENTO/audio/Prece das Sete Linhas.mp3"
-    output_dir = "TREINAMENTO/output"
+    # Current directory
+    current_dir = os.path.dirname(__file__)
+    print(f"Current directory: {current_dir}")
+    # Construct absolute path to audio
+    audio_path = os.path.abspath(os.path.join(current_dir, "TREINAMENTO", "audio", "prece_das_sete_linhas.mp3"))
+    output_dir =  os.path.abspath(os.path.join(current_dir, "TREINAMENTO", "output"))
 
     try:
         results = transcribe_with_finetuned_model(audio_path, output_dir)
