@@ -2,7 +2,7 @@ import os
 import shutil
 from dharma_transcriptions.utils import sanitize_filename
 from dharma_transcriptions.youtube import download_audio
-from dharma_transcriptions.whisper_transcriber import WhisperTranscriber
+from dharma_transcriptions.whisper_transcriber import load_finetuned_model
 
 # Caminho base absoluto
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "TREINAMENTO"))
@@ -12,7 +12,7 @@ BRUTOS_PATH = os.path.join(BASE_PATH, "dados_brutos")
 CORRIGIDOS_PATH = os.path.join(BASE_PATH, "textos_corrigidos")
 
 # Instancia o transcritor Whisper
-whisper_transcriber = WhisperTranscriber(model_name="base")
+whisper_transcriber = load_finetuned_model()
 
 
 def validate_and_download_audio():
