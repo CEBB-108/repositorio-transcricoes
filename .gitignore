@@ -6,7 +6,7 @@ __pycache__/
 *.db
 
 # Pastas de virtual environment
-.env/
+.env
 .venv/
 env/
 venv/

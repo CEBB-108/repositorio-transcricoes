@@ -7,15 +7,7 @@ def download_audio(youtube_url):
     output_folder = "downloads"
     os.makedirs(output_folder, exist_ok=True)
 
-    if sys.platform == "darwin":
-        ffmpeg_location = "/usr/local/bin/ffmpeg"
-    elif sys.platform == "linux":
-        ffmpeg_location = "/usr/bin/ffmpeg"
-    elif sys.platform == "win32":
-        ffmpeg_location = "C:/PATH_Programs/ffmpeg.exe"
-    else:
-        raise OSError("Unsupported operating system.")
-
+    ffmpeg_location = os.environ.get("FFMPEG_LOCATION")
 
     ydl_opts = {
         "format": "bestaudio/best",
