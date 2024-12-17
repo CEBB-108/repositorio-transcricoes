@@ -1,82 +1,93 @@
 import os
 import whisper
+import torch
+
+# Caminho do modelo treinado
+TRAINED_MODEL_PATH = os.path.join("trained_models", "whisper_finetuned.pt")
+
+def load_finetuned_model():
+    """
+    Carrega o modelo Whisper treinado (fine-tuned).
+    """
+    if not os.path.exists(TRAINED_MODEL_PATH):
+        raise FileNotFoundError(f"Modelo treinado não encontrado: {TRAINED_MODEL_PATH}")
+    
+    print("[INFO] Carregando modelo treinado...")
+    model = whisper.load_model("base")
+    model.load_state_dict(torch.load(TRAINED_MODEL_PATH))
+    print("[INFO] Modelo treinado carregado com sucesso.")
+    return model
 
 
-class WhisperTranscriber:
-    def __init__(self, model_name="base", trained_model_path=None):
-        """
-        Inicializa o transcritor Whisper.
-        :param model_name: Nome do modelo Whisper a ser carregado.
-        :param trained_model_path: Caminho para o modelo ajustado, se existir.
-        """
-        print(f"[INFO] Inicializando WhisperTranscriber com o modelo '{model_name}'...")
-        if trained_model_path and os.path.exists(trained_model_path):
-            print(f"[INFO] Carregando modelo ajustado de: {trained_model_path}")
-            self.model = whisper.load_model(trained_model_path)
-        else:
-            print("[INFO] Carregando modelo padrão do Whisper...")
-            self.model = whisper.load_model(model_name)
-        print("[INFO] Modelo carregado com sucesso.")
+def transcribe_with_finetuned_model(audio_path, output_dir):
+    """
+    Transcreve o áudio usando o modelo treinado e salva os resultados.
 
-    def transcribe_audio(self, audio_path):
-        """
-        Transcreve o áudio usando o modelo Whisper.
-        :param audio_path: Caminho para o arquivo de áudio.
-        :return: Transcrição gerada.
-        """
-        if not os.path.exists(audio_path):
-            raise FileNotFoundError(f"[ERRO] Arquivo de áudio não encontrado: {audio_path}")
-        print(f"[INFO] Transcrevendo áudio: {audio_path}...")
-        result = self.model.transcribe(audio_path, fp16=False)
-        print("[INFO] Transcrição concluída.")
-        return result["text"], result["segments"]
+    Args:
+        audio_path (str): Caminho para o arquivo de áudio.
+        output_dir (str): Diretório de saída para os resultados.
 
-    def save_transcription(self, text, segments, output_path):
-        """
-        Salva a transcrição em dois formatos: texto simples e SRT.
-        :param text: Transcrição completa.
-        :param segments: Segmentos da transcrição (usado para SRT).
-        :param output_path: Caminho para salvar os arquivos de saída.
-        """
-        os.makedirs(output_path, exist_ok=True)
+    Returns:
+        dict: Caminhos para a transcrição e o arquivo de legendas.
+    """
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Arquivo de áudio não encontrado: {audio_path}")
+    
+    # Certifique-se de que o diretório de saída exista
+    os.makedirs(output_dir, exist_ok=True)
 
-        # Salvar texto simples
-        text_path = os.path.join(output_path, "transcription.txt")
-        with open(text_path, "w", encoding="utf-8") as f:
-            f.write(text)
-        print(f"[INFO] Transcrição salva em: {text_path}")
+    # Carregar o modelo treinado
+    model = load_finetuned_model()
 
-        # Salvar legendas em formato SRT
-        srt_path = os.path.join(output_path, "subtitles.srt")
-        with open(srt_path, "w", encoding="utf-8") as f:
-            for i, segment in enumerate(segments):
-                start_time = self._format_time(segment["start"])
-                end_time = self._format_time(segment["end"])
-                text = segment["text"]
-                f.write(f"{i + 1}\n")
-                f.write(f"{start_time} --> {end_time}\n")
-                f.write(f"{text}\n\n")
-        print(f"[INFO] Legendas SRT salvas em: {srt_path}")
+    print(f"[INFO] Transcrevendo o áudio: {audio_path}...")
+    result = model.transcribe(audio_path, fp16=False)
+    print("[INFO] Transcrição concluída com sucesso.")
 
-    def fine_tune(self, audio_path, corrected_text):
-        """
-        Placeholder para ajuste fino (fine-tuning) do modelo.
-        :param audio_path: Caminho para o áudio usado no treinamento.
-        :param corrected_text: Transcrição corrigida correspondente ao áudio.
-        """
-        print("[INFO] Função de ajuste fino ainda a ser implementada...")
-        # Esta é uma função avançada que requer o treinamento com Whisper
-        # e ferramentas de ajuste fino de modelos.
+    # Salvar transcrição
+    transcription_path = os.path.join(output_dir, "transcription.txt")
+    with open(transcription_path, "w", encoding="utf-8") as f:
+        f.write(result["text"])
+    print(f"[INFO] Transcrição salva em: {transcription_path}")
 
-    @staticmethod
-    def _format_time(seconds):
-        """
-        Formata o tempo em segundos para o formato SRT.
-        :param seconds: Tempo em segundos.
-        :return: Tempo formatado como HH:MM:SS,mmm.
-        """
-        hours = int(seconds // 3600)
-        minutes = int((seconds % 3600) // 60)
-        seconds = int(seconds % 60)
-        milliseconds = int((seconds % 1) * 1000)
-        return f"{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}"
+    # Salvar legendas
+    subtitle_path = os.path.join(output_dir, "subtitles.srt")
+    with open(subtitle_path, "w", encoding="utf-8") as f:
+        for i, segment in enumerate(result["segments"]):
+            start = format_time(segment["start"])
+            end = format_time(segment["end"])
+            text = segment["text"]
+            f.write(f"{i + 1}\n{start} --> {end}\n{text}\n\n")
+    print(f"[INFO] Subtítulos salvos em: {subtitle_path}")
+
+    return {"transcription_path": transcription_path, "subtitle_path": subtitle_path}
+
+
+def format_time(seconds):
+    """
+    Converte tempo em segundos para o formato SRT (HH:MM:SS,mmm).
+
+    Args:
+        seconds (float): Tempo em segundos.
+
+    Returns:
+        str: Tempo formatado como HH:MM:SS,mmm.
+    """
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    seconds = int(seconds % 60)
+    milliseconds = int((seconds % 1) * 1000)
+    return f"{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}"
+
+
+if __name__ == "__main__":
+    # Exemplo de uso
+    audio_path = "TREINAMENTO/audio/Prece das Sete Linhas.mp3"
+    output_dir = "TREINAMENTO/output"
+
+    try:
+        results = transcribe_with_finetuned_model(audio_path, output_dir)
+        print("[INFO] Resultados:")
+        print(f" - Transcrição: {results['transcription_path']}")
+        print(f" - Legendas: {results['subtitle_path']}")
+    except Exception as e:
+        print(f"[ERRO] Ocorreu um erro: {e}")

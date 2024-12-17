@@ -29,6 +29,7 @@ def download_audio(youtube_url):
             downloaded_file = ydl.prepare_filename(info_dict).replace(".webm", ".mp3")
             os.rename(downloaded_file, audio_file)
 
-            return audio_file, sanitized_title
+            return audio_file  # Retorna apenas o caminho do arquivo
     except Exception as e:
         raise Exception(f"Erro ao baixar ou converter áudio: {str(e)}")
+
