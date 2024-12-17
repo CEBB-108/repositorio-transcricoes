@@ -82,7 +82,7 @@ def format_time(seconds):
 if __name__ == "__main__":
     current_dir = os.path.dirname(__file__)
 
-    audio_path = os.path.abspath(os.path.join(current_dir, "TREINAMENTO", "audio", "prece_das_sete_linhas.mp3"))
+    audio_path = os.path.abspath(os.path.join(current_dir, "TREINAMENTO", "audio", "Prece das Sete Linhas.mp3"))
     output_dir =  os.path.abspath(os.path.join(current_dir, "TREINAMENTO", "output"))
 
     try:
