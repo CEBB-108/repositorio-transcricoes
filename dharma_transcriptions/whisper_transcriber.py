@@ -1,22 +1,6 @@
 import os
-import whisper
 import torch
-
-# Caminho do modelo treinado
-TRAINED_MODEL_PATH = os.path.join("trained_models", "whisper_finetuned.pt")
-
-def load_finetuned_model():
-    """
-    Carrega o modelo Whisper treinado (fine-tuned).
-    """
-    if not os.path.exists(TRAINED_MODEL_PATH):
-        raise FileNotFoundError(f"Modelo treinado não encontrado: {TRAINED_MODEL_PATH}")
-    
-    print("[INFO] Carregando modelo treinado...")
-    model = whisper.load_model("base")
-    model.load_state_dict(torch.load(TRAINED_MODEL_PATH))
-    print("[INFO] Modelo treinado carregado com sucesso.")
-    return model
+from dharma_transcriptions.whisper_core import load_model
 
 
 def transcribe_with_finetuned_model(audio_path, output_dir):
@@ -37,7 +21,7 @@ def transcribe_with_finetuned_model(audio_path, output_dir):
     os.makedirs(output_dir, exist_ok=True)
 
     # Carregar o modelo treinado
-    model = load_finetuned_model()
+    model = load_model(True)
 
     print(f"[INFO] Transcrevendo o áudio: {audio_path}...")
     result = model.transcribe(audio_path, fp16=False)

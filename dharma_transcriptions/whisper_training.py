@@ -2,6 +2,7 @@ import os
 import torch
 import whisper
 from whisper.tokenizer import get_tokenizer
+from dharma_transcriptions.whisper_core import load_model
 
 # Caminho para salvar o modelo treinado
 TRAINED_MODEL_PATH = os.path.join("trained_models", "whisper_finetuned.pt")
@@ -10,21 +11,6 @@ TRAINED_MODEL_PATH = os.path.join("trained_models", "whisper_finetuned.pt")
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "TREINAMENTO"))
 BRUTOS_PATH = os.path.join(BASE_PATH, "dados_brutos")
 CORRIGIDOS_PATH = os.path.join(BASE_PATH, "referencia_corrigida")
-
-
-def load_base_model():
-    """
-    Carrega o modelo base do Whisper e habilita o cálculo de gradientes.
-    """
-    print("[INFO] Carregando o modelo base Whisper...")
-    model = whisper.load_model("base")  # Alterar para 'small', 'medium', etc., se necessário.
-
-    # Habilitar cálculo de gradientes para ajuste fino
-    for param in model.parameters():
-        param.requires_grad = True
-
-    print("[INFO] Modelo base Whisper carregado com sucesso.")
-    return model
 
 
 def fine_tune_model(model, brutos_dir, corrigidos_dir):
@@ -109,7 +95,7 @@ def save_finetuned_model(model):
 if __name__ == "__main__":
     try:
         # Carregar o modelo base
-        model = load_base_model()
+        model = load_model
 
         # Realizar o fine-tuning
         finetuned_model = fine_tune_model(model, BRUTOS_PATH, CORRIGIDOS_PATH)
