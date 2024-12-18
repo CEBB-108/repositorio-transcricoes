@@ -1,13 +1,13 @@
 import os
-import whisper
 from dharma_transcriptions.utils import format_time
+from dharma_transcriptions.whisper_core import load_model
 
 def transcribe_audio_and_generate_subtitles(audio_file, video_title):
     if not os.path.exists(audio_file):
         raise FileNotFoundError(f"Arquivo de áudio não encontrado: {audio_file}")
     
     print("[INFO] Carregando modelo Whisper...")
-    model = whisper.load_model("base")
+    model = load_model()
     print("[INFO] Modelo Whisper carregado com sucesso.")
 
     print(f"[INFO] Transcrevendo o arquivo de áudio: {audio_file}")

@@ -13,6 +13,8 @@ venv/
 pip-log.txt
 pip-delete-this-directory.txt
 
+.env
+
 # Configurações de IDEs e editores
 .vscode/
 *.code-workspace

@@ -1,10 +1,14 @@
 import os
+import sys
 import yt_dlp
 from dharma_transcriptions.utils import sanitize_filename
 
 def download_audio(youtube_url):
     output_folder = "downloads"
     os.makedirs(output_folder, exist_ok=True)
+
+    ffmpeg_location = os.environ.get("FFMPEG_LOCATION")
+
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": os.path.join(output_folder, "%(title)s.%(ext)s"),
@@ -15,7 +19,7 @@ def download_audio(youtube_url):
                 "preferredquality": "192",
             },
         ],
-        "ffmpeg_location": "C:/PATH_Programs/ffmpeg.exe"
+        "ffmpeg_location": ffmpeg_location
     }
 
     try:
