@@ -54,9 +54,8 @@ def fine_tune_model(model, brutos_dir, corrigidos_dir):
             try:
                 with open(bruto_path, "r", encoding="utf-8") as bruto_file, open(corrigido_path, "r",
                 encoding="utf-8") as corrigido_file:
-                    expected_outcome_file = process_file(corrigido_text)
                     bruto_text = bruto_file.read()
-                    corrigido_text = expected_outcome_file.read()
+                    corrigido_text = process_file(corrigido_file.read())
 
                 # Carregar áudio bruto como mel-espectrograma
                 audio_tensor = whisper.log_mel_spectrogram(torch.tensor([float(x) for x in bruto_text.split()]))
