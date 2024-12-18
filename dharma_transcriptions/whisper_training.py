@@ -1,4 +1,5 @@
 import os
+import re
 import torch
 import whisper
 from whisper.tokenizer import get_tokenizer
@@ -51,9 +52,11 @@ def fine_tune_model(model, brutos_dir, corrigidos_dir):
 
             # Processar áudio e texto
             try:
-                with open(bruto_path, "r", encoding="utf-8") as bruto_file, open(corrigido_path, "r", encoding="utf-8") as corrigido_file:
+                with open(bruto_path, "r", encoding="utf-8") as bruto_file, open(corrigido_path, "r",
+                encoding="utf-8") as corrigido_file:
+                    expected_outcome_file = process_file(corrigido_text)
                     bruto_text = bruto_file.read()
-                    corrigido_text = corrigido_file.read()
+                    corrigido_text = expected_outcome_file.read()
 
                 # Carregar áudio bruto como mel-espectrograma
                 audio_tensor = whisper.log_mel_spectrogram(torch.tensor([float(x) for x in bruto_text.split()]))
@@ -91,11 +94,37 @@ def save_finetuned_model(model):
     torch.save(model.state_dict(), TRAINED_MODEL_PATH)
     print(f"[INFO] Modelo treinado salvo em: {TRAINED_MODEL_PATH}")
 
+def remove_timestamps(text):
+    """Removes timestamps from a text string.
+
+    Args:
+        text: The input text containing timestamps.
+
+    Returns:
+        The text with timestamps removed.
+    """
+    cleaned_text = re.sub(r"\[\d+\.\d+ --> \d+\.\d+\]", "", text)  # Removes timestamps
+    cleaned_text = re.sub(r"\[\d+:\d+:\d+\.\d+ --> \d+:\d+:\d+\.\d+\]", "", cleaned_text) # Removes other timestamps formats (HH:MM:SS.mmm --> HH:MM:SS.mmm)
+
+    if cleaned_text.strip() == text.strip():
+       return text
+    
+    return cleaned_text.strip()
+
+def process_file(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        text = f.read()
+
+    cleaned_text = remove_timestamps(text)
+
+    with open(filepath, 'w', encoding='utf-8') as f: 
+        f.write(cleaned_text)
+
 
 if __name__ == "__main__":
     try:
         # Carregar o modelo base
-        model = load_model
+        model = load_model(True)
 
         # Realizar o fine-tuning
         finetuned_model = fine_tune_model(model, BRUTOS_PATH, CORRIGIDOS_PATH)

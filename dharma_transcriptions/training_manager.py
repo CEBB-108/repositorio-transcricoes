@@ -100,7 +100,6 @@ def prepare_data_for_training(pairs):
         else:
             print(f"[AVISO] Transcrição bruta já existente: {bruto_file_path}")
 
-
 def start_training():
     """
     Inicia o processo de treinamento usando os dados organizados.
